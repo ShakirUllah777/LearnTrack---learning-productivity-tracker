@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - LearnTrack{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  
+  <!-- Welcome Banner -->
+  <div class="p-4 bg-white border rounded-4 shadow-sm mb-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+    <div>
+      <h2 class="fw-bold text-dark mb-1">
+        Good Day, {{ user.first_name|default:user.username }} 👋
+      </h2>
+      <p class="text-muted mb-0">Here is an overview of your tasks, notes, and learning progress.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'task_list' %}" class="btn btn-primary btn-sm px-3 fw-semibold"><i class="bi bi-plus-lg me-1"></i> Add Task</a>
+      <a href="{% url 'note_list' %}" class="btn btn-outline-primary btn-sm px-3 fw-semibold"><i class="bi bi-plus-lg me-1"></i> Add Note</a>
+      <a href="{% url 'skill_list' %}" class="btn btn-outline-success btn-sm px-3 fw-semibold"><i class="bi bi-plus-lg me-1"></i> Add Skill</a>
+    </div>
+  </div>
+
+  <!-- Top Statistics Cards -->
+  <div class="row g-3 mb-4">
+    <!-- Tasks Stat -->
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <span class="text-muted small fw-semibold d-block mb-1">Total Tasks</span>
+            <h3 class="fw-bold text-dark mb-0">{{ total_tasks }}</h3>
+            <small class="text-success fw-semibold"><i class="bi bi-check2-circle"></i> {{ completed_tasks }} Completed</small>
+          </div>
+          <div class="bg-primary-subtle text-primary rounded-3 p-3">
+            <i class="bi bi-check2-square fs-3"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notes Stat -->
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <span class="text-muted small fw-semibold d-block mb-1">Saved Notes</span>
+            <h3 class="fw-bold text-dark mb-0">{{ total_notes }}</h3>
+            <small class="text-muted">Personal knowledge items</small>
+          </div>
+          <div class="bg-info-subtle text-info rounded-3 p-3">
+            <i class="bi bi-journal-text fs-3"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Skills Stat -->
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <span class="text-muted small fw-semibold d-block mb-1">Active Skills</span>
+            <h3 class="fw-bold text-dark mb-0">{{ total_skills }}</h3>
+            <small class="text-primary fw-semibold">Learning in progress</small>
+          </div>
+          <div class="bg-success-subtle text-success rounded-3 p-3">
+            <i class="bi bi-book fs-3"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard Main Grid -->
+  <div class="row g-4">
+    
+    <!-- Left Column: Pending Tasks & Learning Progress -->
+    <div class="col-lg-7">
+      
+      <!-- Pending Tasks Widget -->
+      <div class="card border shadow-sm rounded-4 bg-white mb-4">
+        <div class="card-header bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
+          <h5 class="fw-bold text-dark mb-0"><i class="bi bi-list-task text-primary me-2"></i>Pending Tasks</h5>
+          <a href="{% url 'task_list' %}" class="btn btn-sm btn-link text-decoration-none fw-semibold">View All &rarr;</a>
+        </div>
+        <div class="card-body p-4">
+          {% if pending_tasks %}
+            <div class="list-group list-group-flush border-0">
+              {% for task in pending_tasks %}
+                <div class="list-group-item px-0 py-3 d-flex align-items-center justify-content-between border-bottom">
+                  <div class="d-flex align-items-center gap-3">
+                    <a href="{% url 'task_toggle' task.pk %}" class="btn btn-sm border-2 rounded-circle p-0 text-secondary" style="width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center;" title="Mark Completed">
+                      <i class="bi bi-circle"></i>
+                    </a>
+                    <div>
+                      <h6 class="fw-bold text-dark mb-1">{{ task.title }}</h6>
+                      <div class="d-flex align-items-center gap-2">
+                        <span class="badge {% if task.priority == 'HIGH' %}bg-danger-subtle text-danger{% elif task.priority == 'MEDIUM' %}bg-warning-subtle text-warning{% else %}bg-secondary-subtle text-secondary{% endif %}">
+                          {{ task.get_priority_display }}
+                        </span>
+                        {% if task.due_date %}
+                          <small class="text-muted"><i class="bi bi-calendar-event"></i> {{ task.due_date|date:"M d" }}</small>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </div>
+                  <a href="{% url 'task_edit' task.pk %}" class="btn btn-sm btn-light text-secondary"><i class="bi bi-pencil"></i></a>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-center py-4 text-muted">
+              <i class="bi bi-check-all fs-2 text-success"></i>
+              <p class="mb-0 mt-2">All tasks are completed! Great job.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Learning Progress Widget -->
+      <div class="card border shadow-sm rounded-4 bg-white">
+        <div class="card-header bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
+          <h5 class="fw-bold text-dark mb-0"><i class="bi bi-graph-up text-success me-2"></i>Learning Journey Progress</h5>
+          <a href="{% url 'skill_list' %}" class="btn btn-sm btn-link text-decoration-none fw-semibold">View All Skills &rarr;</a>
+        </div>
+        <div class="card-body p-4">
+          {% if skills %}
+            {% for skill in skills %}
+              <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <a href="{% url 'skill_detail' skill.pk %}" class="fw-bold text-dark text-decoration-none hover-primary">
+                    {{ skill.name }}
+                  </a>
+                  <span class="fw-bold text-primary">{{ skill.progress_percentage }}%</span>
+                </div>
+                <div class="progress mb-1" style="height: 10px;">
+                  <div class="progress-bar bg-primary" role="progressbar" style="width: {{ skill.progress_percentage }}%;"></div>
+                </div>
+                <small class="text-muted">{{ skill.completed_topics_count }} of {{ skill.total_topics_count }} topics completed</small>
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="text-center py-4 text-muted">
+              <i class="bi bi-book fs-2 text-primary"></i>
+              <p class="mb-2 mt-2">No skills added yet.</p>
+              <a href="{% url 'skill_list' %}" class="btn btn-sm btn-primary">Add Your First Skill</a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Recent Notes preview & Quick Links -->
+    <div class="col-lg-5">
+      
+      <!-- Recent Notes Card -->
+      <div class="card border shadow-sm rounded-4 bg-white mb-4">
+        <div class="card-header bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
+          <h5 class="fw-bold text-dark mb-0"><i class="bi bi-journal-text text-info me-2"></i>Recent Notes</h5>
+          <a href="{% url 'note_list' %}" class="btn btn-sm btn-link text-decoration-none fw-semibold">View All &rarr;</a>
+        </div>
+        <div class="card-body p-4">
+          {% if recent_notes %}
+            <div class="d-flex flex-column gap-3">
+              {% for note in recent_notes %}
+                <div class="p-3 bg-light rounded-3 border">
+                  <h6 class="fw-bold text-dark mb-1">{{ note.title }}</h6>
+                  <p class="text-muted small mb-2 text-truncate">{{ note.content }}</p>
+                  <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                      {% for tag in note.tag_list %}
+                        <span class="badge bg-white text-secondary border me-1 small">{{ tag }}</span>
+                      {% endfor %}
+                    </div>
+                    <small class="text-muted">{{ note.created_at|date:"M d" }}</small>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-center py-4 text-muted">
+              <i class="bi bi-file-earmark-text fs-2 text-info"></i>
+              <p class="mb-2 mt-2">No notes created yet.</p>
+              <a href="{% url 'note_list' %}" class="btn btn-sm btn-outline-info">Create a Note</a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

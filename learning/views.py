@@ -3,14 +3,27 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Skill, Topic
 from .forms import SkillForm, TopicForm
+from notes.models import Note
 
 @login_required
 def skill_list(request):
     skills = Skill.objects.filter(user=request.user)
     form = SkillForm()
+    
+    # Select first skill as active skill if available for hero timeline preview
+    active_skill = skills.first() if skills.exists() else None
+    topics = active_skill.topics.all() if active_skill else []
+    topic_form = TopicForm(initial={'order': topics.count() + 1}) if active_skill else None
+    linked_notes = Note.objects.filter(user=request.user)[:3]
+
     context = {
         'skills': skills,
+        'active_skill': active_skill,
+        'skill': active_skill,
+        'topics': topics,
         'form': form,
+        'topic_form': topic_form,
+        'linked_notes': linked_notes,
         'active_tab': 'learning',
     }
     return render(request, 'learning/skill_list.html', context)
@@ -60,18 +73,24 @@ def skill_delete(request, pk):
 @login_required
 def skill_detail(request, pk):
     skill = get_object_or_404(Skill, pk=pk, user=request.user)
+    skills = Skill.objects.filter(user=request.user)
     topics = skill.topics.all()
     
-    # Pre-fill order for new topic form
     next_order = topics.count() + 1
     topic_form = TopicForm(initial={'order': next_order})
     skill_form = SkillForm(instance=skill)
+    form = SkillForm()
+    linked_notes = Note.objects.filter(user=request.user)[:3]
 
     context = {
         'skill': skill,
+        'active_skill': skill,
+        'skills': skills,
         'topics': topics,
         'topic_form': topic_form,
         'skill_form': skill_form,
+        'form': form,
+        'linked_notes': linked_notes,
         'active_tab': 'learning',
     }
     return render(request, 'learning/skill_detail.html', context)

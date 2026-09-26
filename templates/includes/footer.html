@@ -1,0 +1,28 @@
+{% load static %}
+<footer class="app-footer">
+  <div class="wrap">
+    <div class="foot-row">
+      <a href="{% url 'home' %}" class="brand">
+        <span class="brand-mark">LT</span>
+        <span>LearnTrack</span>
+      </a>
+      <div class="foot-links">
+        <a href="{% url 'home' %}#features">Features</a>
+        <a href="{% url 'home' %}#how-it-works">How It Works</a>
+        <a href="{% url 'home' %}#learning-journey">Learning Journey</a>
+        {% if user.is_authenticated %}
+          <a href="{% url 'task_list' %}">Tasks</a>
+          <a href="{% url 'note_list' %}">Notes</a>
+          <a href="{% url 'skill_list' %}">Learning</a>
+        {% else %}
+          <a href="{% url 'login' %}">Log In</a>
+          <a href="{% url 'register' %}">Sign Up</a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>&copy; 2026 LearnTrack. All rights reserved.</span>
+      <span>Track what you do. Remember what you learn.</span>
+    </div>
+  </div>
+</footer>

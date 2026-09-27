@@ -11,7 +11,13 @@ def task_list(request):
     priority_filter = request.GET.get('priority', '').strip()
     status_filter = request.GET.get('status', '').strip()
 
-    tasks = Task.objects.filter(user=request.user)
+    all_user_tasks = Task.objects.filter(user=request.user)
+    count_all = all_user_tasks.count()
+    count_pending = all_user_tasks.filter(status='PENDING').count()
+    count_progress = all_user_tasks.filter(status='IN_PROGRESS').count()
+    count_done = all_user_tasks.filter(status='COMPLETED').count()
+
+    tasks = all_user_tasks
 
     if query:
         tasks = tasks.filter(Q(title__icontains=query) | Q(description__icontains=query))
@@ -23,6 +29,10 @@ def task_list(request):
     form = TaskForm()
     context = {
         'tasks': tasks,
+        'count_all': count_all,
+        'count_pending': count_pending,
+        'count_progress': count_progress,
+        'count_done': count_done,
         'form': form,
         'query': query,
         'priority_filter': priority_filter,

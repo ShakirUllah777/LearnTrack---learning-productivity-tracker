@@ -45,7 +45,7 @@ def home(request):
         total_skills = skills.count()
         completed_topics_count = topics.filter(status='COMPLETED').count()
 
-        # Compute Weekly Momentum Graph based on 7-day activity for BOTH Tasks AND Skill Learning (CRUD)
+        # Compute Weekly Momentum Graph based on 7-day real activity dataset (Tasks, Notes, & Skills)
         start_date = today - timedelta(days=6)
         weekly_momentum = []
         total_weekly_activity = 0
@@ -54,21 +54,27 @@ def home(request):
         for i in range(7):
             day_date = start_date + timedelta(days=i)
 
-            # Task CRUD activity on day_date (created, updated, or completed)
+            # Task activity on day_date
             t_created = tasks.filter(created_at__date=day_date).count()
-            t_updated = tasks.filter(updated_at__date=day_date, status='COMPLETED').count()
-            task_act = t_created + t_updated
+            t_completed = tasks.filter(updated_at__date=day_date, status='COMPLETED').count()
+            task_act = t_created + t_completed
 
-            # Skill & Topic CRUD learning activity on day_date (created, date_learned, or completed)
+            # Note activity on day_date
+            n_created = notes.filter(created_at__date=day_date).count()
+            n_updated = notes.filter(updated_at__date=day_date).exclude(created_at__date=day_date).count()
+            note_act = n_created + n_updated
+
+            # Skill & Topic learning activity on day_date
             tp_created = topics.filter(created_at__date=day_date).count()
             tp_learned = topics.filter(date_learned=day_date).count()
             tp_completed = topics.filter(updated_at__date=day_date, status='COMPLETED').count()
             skill_act = tp_created + tp_learned + tp_completed
 
-            day_total = task_act + skill_act
+            day_total = task_act + note_act + skill_act
             daily_counts.append({
                 'date': day_date,
                 'task_act': task_act,
+                'note_act': note_act,
                 'skill_act': skill_act,
                 'total': day_total
             })
@@ -77,25 +83,24 @@ def home(request):
         grid_max = max(max_val, 4)
         grid_labels = [grid_max, round(grid_max * 0.75), round(grid_max * 0.5), round(grid_max * 0.25), 0]
 
-        svg_h = 190
         for i, d in enumerate(daily_counts):
             day_date = d['date']
             val = d['total']
             total_weekly_activity += val
             
-            bar_height = max(6, int((val / grid_max) * svg_h)) if val > 0 else 6
-            bar_y = svg_h - bar_height
-            bar_x = i * (86 + 14)
+            if val > 0:
+                height_pct = max(6, int(round((val / grid_max) * 100)))
+            else:
+                height_pct = 0
 
             weekly_momentum.append({
                 'day_label': 'Today' if day_date == today else day_date.strftime('%a'),
                 'full_date': day_date.strftime('%b %d'),
                 'val': val,
                 'task_act': d['task_act'],
+                'note_act': d['note_act'],
                 'skill_act': d['skill_act'],
-                'height': bar_height,
-                'y': bar_y,
-                'x': bar_x,
+                'height_pct': height_pct,
                 'is_today': day_date == today,
             })
 

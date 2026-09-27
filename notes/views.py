@@ -10,7 +10,16 @@ def note_list(request):
     query = request.GET.get('q', '').strip()
     tag_filter = request.GET.get('tag', '').strip()
 
-    notes = Note.objects.filter(user=request.user)
+    all_user_notes = Note.objects.filter(user=request.user)
+
+    # Extract unique tags across all user notes
+    all_tags = set()
+    for n in all_user_notes:
+        for t in n.tag_list:
+            all_tags.add(t)
+    all_tags = sorted(list(all_tags))
+
+    notes = all_user_notes
 
     if query:
         notes = notes.filter(Q(title__icontains=query) | Q(content__icontains=query) | Q(tags__icontains=query))
@@ -20,6 +29,7 @@ def note_list(request):
     form = NoteForm()
     context = {
         'notes': notes,
+        'all_tags': all_tags,
         'form': form,
         'query': query,
         'tag_filter': tag_filter,

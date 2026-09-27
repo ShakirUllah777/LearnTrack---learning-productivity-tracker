@@ -294,74 +294,145 @@
       </div>
     </section>
 
-    <!-- WEEKLY MOMENTUM SVG CHART (REAL USER ACTIVITY DATASET) -->
-    <section class="panel mb-4">
-      <div class="panel-head">
-        <div class="panel-head-left">
-          <div class="panel-icon"><i class="bi bi-bar-chart-line text-primary"></i></div>
-          <div>
-            <div class="panel-title">Weekly Momentum</div>
-            <div class="panel-sub">{{ total_weekly_activity }} activity item{{ total_weekly_activity|pluralize }} logged past 7 days (Tasks & Learning)</div>
+    <!-- WEEKLY MOMENTUM REAL TIME DATASET CHART -->
+    <style>
+      .wm-card {
+        width: 100%; background: var(--paper); border: 1px solid var(--line);
+        border-radius: 18px; box-shadow: 0 1px 2px rgba(30,27,58,.04), 0 8px 24px -12px rgba(76,58,190,.18);
+        padding: 24px 26px 20px; margin-bottom: 24px;
+      }
+      .wm-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 22px; }
+      .wm-top-left { display: flex; gap: 12px; align-items: center; }
+      .wm-icon {
+        width: 42px; height: 42px; border-radius: 13px; flex-shrink: 0;
+        background: linear-gradient(135deg, var(--indigo), #7b74f2);
+        display: flex; align-items: center; justify-content: center; color: #fff;
+        box-shadow: 0 6px 16px -4px rgba(79,70,229,.4);
+      }
+      .wm-title h3 { font-size: 17px; font-weight: 800; margin: 0; letter-spacing: -0.01em; color: var(--ink); }
+      .wm-sub { font-size: 13px; color: var(--ink-soft); margin: 2px 0 0; font-weight: 500; }
+      .wm-badge {
+        display: inline-flex; align-items: center; gap: 6px; background: var(--green-tint); color: var(--green);
+        font-size: 12px; font-weight: 700; padding: 7px 13px; border-radius: 999px; white-space: nowrap;
+      }
+      .wm-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 3px var(--green-tint); animation: wm-pulse 1.8s ease-in-out infinite; }
+      @keyframes wm-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+
+      .wm-chart { display: flex; gap: 6px; margin-bottom: 6px; }
+      .wm-yaxis { display: flex; flex-direction: column; justify-content: space-between; height: 180px; font-size: 11px; color: var(--ink-soft); font-weight: 600; width: 24px; text-align: right; }
+      .wm-plot { flex: 1; position: relative; height: 180px; display: flex; align-items: flex-end; gap: 14px; border-bottom: 1px solid var(--line); margin-bottom: 32px; }
+      .wm-gridline { position: absolute; left: 0; right: 0; height: 1px; background: repeating-linear-gradient(90deg, var(--line) 0 6px, transparent 6px 12px); pointer-events: none; }
+      .wm-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; position: relative; }
+      .wm-bar {
+        width: 100%; max-width: 46px; border-radius: 9px 9px 4px 4px;
+        background: linear-gradient(180deg, #e2ddfb, #d8d2f8);
+        position: relative; transition: transform .18s ease, box-shadow .18s ease;
+        animation: wm-grow .5s cubic-bezier(.2,.8,.2,1) both; transform-origin: bottom;
+      }
+      @keyframes wm-grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+      .wm-bar:hover { transform: scaleY(1.02); }
+      .wm-bar.today {
+        background: linear-gradient(180deg, #a78bfa, var(--indigo));
+        box-shadow: 0 10px 22px -8px rgba(79,70,229,.6);
+      }
+      .wm-bar-value { position: absolute; top: -22px; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 800; color: var(--ink-soft); }
+      .wm-bar.today .wm-bar-value { color: var(--indigo); }
+      .wm-bar-tip {
+        position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%) translateY(4px);
+        background: var(--ink); color: #fff; font-size: 11px; font-weight: 700; padding: 6px 10px; border-radius: 8px;
+        white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .15s ease, transform .15s ease;
+        box-shadow: 0 8px 18px -6px rgba(0,0,0,.35); z-index: 10;
+      }
+      .wm-bar-tip::after { content: ""; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: var(--ink); }
+      .wm-bar-col:hover .wm-bar-tip { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+      .wm-day-label {
+        position: absolute; top: calc(100% + 10px); left: 50%; transform: translateX(-50%);
+        font-size: 12px; font-weight: 600; color: var(--ink-soft); white-space: nowrap;
+      }
+      .wm-day-label.today { color: var(--indigo); font-weight: 800; }
+
+      .wm-divider { height: 1px; background: var(--line); margin: 8px 0 18px; }
+
+      .wm-stats-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; }
+      .wm-stats-title { display: flex; align-items: center; gap: 8px; }
+      .wm-stats-title h4 { font-size: 15px; font-weight: 800; margin: 0; color: var(--ink); }
+      .wm-pill-tag { background: var(--indigo-tint); color: var(--indigo); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
+      .wm-stat-boxes { display: flex; gap: 10px; flex-wrap: wrap; }
+      .wm-stat-box {
+        display: flex; align-items: center; gap: 10px; background: var(--panel); border: 1px solid var(--line);
+        border-radius: 12px; padding: 10px 14px;
+      }
+      .wm-stat-box .si { width: 32px; height: 32px; border-radius: 99px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+      .wm-stat-box.tasks .si { background: var(--indigo-tint); }
+      .wm-stat-box.learn .si { background: var(--amber-tint); }
+      .wm-stat-num { font-size: 16px; font-weight: 800; line-height: 1; color: var(--ink); }
+      .wm-stat-lbl { font-size: 11px; color: var(--ink-soft); font-weight: 600; margin-top: 2px; }
+    </style>
+
+    <div class="wm-card">
+      <div class="wm-top">
+        <div class="wm-top-left">
+          <div class="wm-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 20V10M12 20V4M20 20v-7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="wm-title">
+            <h3>Weekly Momentum</h3>
+            <p class="wm-sub">{{ total_weekly_activity }} activity item{{ total_weekly_activity|pluralize }} logged past 7 days</p>
           </div>
         </div>
-        <span class="live-badge">
-          <span class="live-dot"></span> Real Activity Dataset
-        </span>
+        <span class="wm-badge"><span class="wm-dot"></span>Real Activity Dataset</span>
       </div>
 
-      <div class="chart-area">
-        <div class="grid-lines">
-          <div class="grid-line" style="top: 0px;"><span class="grid-label">{{ grid_labels.0 }}</span></div>
-          <div class="grid-line" style="top: 47px;"><span class="grid-label">{{ grid_labels.1 }}</span></div>
-          <div class="grid-line" style="top: 95px;"><span class="grid-label">{{ grid_labels.2 }}</span></div>
-          <div class="grid-line" style="top: 142px;"><span class="grid-label">{{ grid_labels.3 }}</span></div>
-          <div class="grid-line" style="top: 190px;"><span class="grid-label">{{ grid_labels.4 }}</span></div>
+      <div class="wm-chart">
+        <div class="wm-yaxis">
+          {% for label in grid_labels %}
+            <span>{{ label }}</span>
+          {% endfor %}
         </div>
-
-        <svg id="chart-svg" viewBox="0 0 700 190" preserveAspectRatio="none">
-          <defs>
-            <linearGradient id="todayGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#6d63ef"/>
-              <stop offset="100%" stop-color="#4f46e5"/>
-            </linearGradient>
-          </defs>
+        <div class="wm-plot">
+          <div class="wm-gridline" style="bottom: 75%;"></div>
+          <div class="wm-gridline" style="bottom: 50%;"></div>
+          <div class="wm-gridline" style="bottom: 25%;"></div>
 
           {% for bar in weekly_momentum %}
-            <rect class="bar-track" x="{{ bar.x }}" y="0" width="86" height="190" rx="8" />
-            <rect class="bar {% if bar.is_today %}today{% endif %}"
-                  x="{{ bar.x }}"
-                  y="{{ bar.y }}"
-                  width="86"
-                  height="{{ bar.height }}"
-                  rx="8"
-                  data-day="{{ bar.day_label }}"
-                  data-date="{{ bar.full_date }}"
-                  data-val="{{ bar.val }}"
-                  data-tasks="{{ bar.task_act }}"
-                  data-skills="{{ bar.skill_act }}" />
+            <div class="wm-bar-col">
+              <div class="wm-bar-tip">{{ bar.val }} activit{% if bar.val == 1 %}y{% else %}ies{% endif %} (Tasks: {{ bar.task_act }}, Notes: {{ bar.note_act }}, Skills: {{ bar.skill_act }})</div>
+              <div class="wm-bar {% if bar.is_today %}today{% endif %}" style="height: {% if bar.val > 0 %}{{ bar.height_pct }}%{% else %}4px{% endif %};">
+                {% if bar.val > 0 %}
+                  <span class="wm-bar-value">{{ bar.val }}</span>
+                {% endif %}
+              </div>
+              <span class="wm-day-label {% if bar.is_today %}today{% endif %}">{{ bar.day_label }}</span>
+            </div>
           {% endfor %}
-        </svg>
-
-        <div class="tooltip-chart" id="chart-tooltip"></div>
-      </div>
-
-      <div class="day-labels d-flex mt-2">
-        {% for bar in weekly_momentum %}
-          <span class="flex-grow-1 text-center small fw-semibold {% if bar.is_today %}today{% endif %}">
-            {{ bar.day_label }}
-          </span>
-        {% endfor %}
-      </div>
-
-      <div class="momentum-foot mt-3 pt-3 border-top">
-        <div class="left">
-          Activity Track <span class="tag">Tasks & Skills CRUD</span>
-        </div>
-        <div class="text-muted small">
-          <b>{{ completed_tasks }}</b> tasks completed &bull; <b>{{ completed_topics_count }}</b> learning topics mastered
         </div>
       </div>
-    </section>
+
+      <div class="wm-divider"></div>
+
+      <div class="wm-stats-row">
+        <div class="wm-stats-title">
+          <h4>Activity Track</h4>
+        </div>
+        <div class="wm-stat-boxes">
+          <div class="wm-stat-box tasks">
+            <div class="si">✅</div>
+            <div>
+              <div class="wm-stat-num">{{ completed_tasks }}</div>
+              <div class="wm-stat-lbl">Tasks completed</div>
+            </div>
+          </div>
+          <div class="wm-stat-box learn">
+            <div class="si">🎓</div>
+            <div>
+              <div class="wm-stat-num">{{ completed_topics_count }}</div>
+              <div class="wm-stat-lbl">Topics mastered</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
   </main>
 </div>

@@ -44,6 +44,7 @@
     </a>
   </div>
 </aside>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
 
 <!-- MAIN APP SHELL -->
 <div class="app-shell">
@@ -428,14 +429,18 @@
 
 <!-- SCRIPTS FOR DASHBOARD INTERACTION -->
 <script>
-  // Mobile Sidebar Toggle
+  // Mobile Sidebar & Backdrop Overlay Toggle
   const sidebar = document.getElementById('sidebar');
   const menuBtn = document.getElementById('menu-btn');
-  if (menuBtn && sidebar) {
-    menuBtn.addEventListener('click', function() {
-      sidebar.classList.toggle('open');
-    });
+  const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+  function toggleSidebar() {
+    if (sidebar) sidebar.classList.toggle('open');
+    if (sidebarOverlay) sidebarOverlay.classList.toggle('active');
   }
+
+  if (menuBtn) menuBtn.addEventListener('click', toggleSidebar);
+  if (sidebarOverlay) sidebarOverlay.addEventListener('click', toggleSidebar);
 
   // Filter Tasks Script
   function filterTasks(type) {

@@ -157,13 +157,13 @@
       <div class="panel-card-custom">
         <div class="panel-header-custom">
           <div class="d-flex align-items-center gap-3">
-            <div class="icon-badge-task"><i class="bi bi-sliders"></i></div>
+            <div class="icon-badge-task"><i class="bi bi-check2-square"></i></div>
             <div>
               <div class="panel-title">Today's Tasks</div>
-              <div class="panel-sub">Focus sprints & academic submissions</div>
+              <div class="panel-sub">Focus sprints & submissions</div>
             </div>
           </div>
-          <a class="panel-link" href="{% url 'task_list' %}">View All Tasks &rarr;</a>
+          <a class="panel-link" href="{% url 'task_list' %}">View All &rarr;</a>
         </div>
 
         <!-- Filter Pills matching screenshot -->
@@ -179,13 +179,11 @@
             {% for task in today_tasks %}
               <div class="task-row-img task-item-row" data-priority="{{ task.priority }}" data-status="{{ task.status }}">
                 <div class="d-flex align-items-center gap-3" style="min-width: 0;">
-                  <a href="{% url 'task_toggle' task.pk %}" class="task-check-icon text-decoration-none" title="Toggle status">
+                  <a href="{% url 'task_toggle' task.pk %}" class="task-check-link text-decoration-none" title="Toggle status">
                     {% if task.status == 'COMPLETED' %}
-                      <i class="bi bi-check-circle-fill text-success"></i>
-                    {% elif task.status == 'IN_PROGRESS' %}
-                      <i class="bi bi-record-btn-fill text-primary"></i>
+                      <div class="task-check-icon completed"><i class="bi bi-check-lg"></i></div>
                     {% else %}
-                      <i class="bi bi-square text-muted" style="font-size: 18px;"></i>
+                      <div class="task-check-icon pending"></div>
                     {% endif %}
                   </a>
                   
@@ -193,7 +191,7 @@
                     <span class="task-title-text {% if task.status == 'COMPLETED' %}done{% endif %} text-truncate">{{ task.title }}</span>
                     <span class="task-meta-text">
                       Due: Today &bull; 
-                      <span class="{% if task.priority == 'HIGH' %}prio-high-text{% elif task.priority == 'MEDIUM' %}prio-med-text{% endif %}">
+                      <span class="{% if task.priority == 'HIGH' %}prio-high-text{% elif task.priority == 'MEDIUM' %}prio-med-text{% else %}prio-low-text{% endif %}">
                         {{ task.get_priority_display }}
                       </span>
                     </span>
@@ -202,15 +200,15 @@
 
                 <div>
                   {% if task.status == 'COMPLETED' %}
-                    <span class="badge bg-success-subtle text-success rounded-pill px-3 py-1 fw-bold" style="font-size: 11px;">
-                      &bull; Completed
+                    <span class="task-status-badge completed">
+                      Completed
                     </span>
                   {% elif task.status == 'IN_PROGRESS' %}
-                    <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-bold" style="font-size: 11px;">
-                      &bull; In Progress
+                    <span class="task-status-badge in-progress">
+                      In Progress
                     </span>
                   {% else %}
-                    <span class="badge bg-light text-secondary border rounded-pill px-3 py-1 fw-bold" style="font-size: 11px;">
+                    <span class="task-status-badge pending">
                       Pending
                     </span>
                   {% endif %}
@@ -224,61 +222,52 @@
           {% endif %}
         </div>
 
-        <!-- Quick Add Input Container matching screenshot -->
-        <form method="POST" action="{% url 'task_create' %}" class="quick-add-container">
-          {% csrf_token %}
-          <span class="text-muted fw-bold"><i class="bi bi-plus-circle text-muted fs-5"></i></span>
-          <input id="quick-task-input" name="title" type="text" placeholder="Add task for today... (Press Enter to log)" required>
-          <input type="hidden" name="due_date" value="{{ today|date:'Y-m-d' }}">
-          <input type="hidden" name="priority" value="MEDIUM">
-          <input type="hidden" name="status" value="PENDING">
-          <button type="submit">Add</button>
-        </form>
+
       </div>
 
       <!-- ACTIVE SKILLS PANEL (MATCHING ATTACHED SCREENSHOT) -->
       <div class="panel-card-custom">
         <div class="panel-header-custom">
           <div class="d-flex align-items-center gap-3">
-            <div class="icon-badge-skill"><i class="bi bi-book"></i></div>
+            <div class="icon-badge-skill"><i class="bi bi-journal-bookmark-fill"></i></div>
             <div>
               <div class="panel-title">Active Skills</div>
               <div class="panel-sub">Curriculum milestones</div>
             </div>
           </div>
-          <a class="panel-link" href="{% url 'skill_list' %}">Explore Roadmaps &rarr;</a>
+          <a class="panel-link" href="{% url 'skill_list' %}">Roadmaps &rarr;</a>
         </div>
 
         <div class="skill-list-container">
           {% if skills %}
             {% for skill in skills %}
-              <div class="skill-card-img">
+              <div class="skill-item-row">
                 <div class="skill-top-row">
-                  <div>
+                  <div class="d-flex align-items-center gap-1">
                     <a href="{% url 'skill_detail' skill.pk %}" class="skill-name-text">
                       {{ skill.name }}
                     </a>
                     {% if skill.progress_percentage >= 90 %}
-                      <span class="skill-tag-pill near-mastery">Near Mastery</span>
+                      <span class="skill-tag-pill near-mastery">Near mastery</span>
                     {% elif 'react' in skill.name|lower %}
                       <span class="skill-tag-pill">Frontend</span>
-                    {% elif 'django' in skill.name|lower %}
+                    {% elif 'django' in skill.name|lower or 'python' in skill.name|lower %}
                       <span class="skill-tag-pill">Backend</span>
                     {% elif 'javascript' in skill.name|lower or 'js' in skill.name|lower %}
-                      <span class="skill-tag-pill">Core Runtime</span>
+                      <span class="skill-tag-pill">Core</span>
                     {% else %}
                       <span class="skill-tag-pill">Track</span>
                     {% endif %}
                   </div>
-                  <span class="skill-pct-text {% if skill.progress_percentage >= 90 %}text-success{% endif %}">{{ skill.progress_percentage }}%</span>
+                  <span class="skill-pct-text">{{ skill.progress_percentage }}%</span>
                 </div>
 
                 <div class="skill-track-bar">
-                  <div class="skill-fill-bar {% if skill.progress_percentage >= 90 %}near-mastery{% endif %}" style="width: {{ skill.progress_percentage }}%;"></div>
+                  <div class="skill-fill-bar" style="width: {{ skill.progress_percentage }}%;"></div>
                 </div>
 
                 <div class="skill-foot-row">
-                  <span>{{ skill.completed_topics_count }}/{{ skill.total_topics_count }} Topics Completed</span>
+                  <span class="skill-count-text">{{ skill.completed_topics_count }}/{{ skill.total_topics_count }} topics</span>
                   <span class="skill-next-text">{{ skill.next_topic_title }}</span>
                 </div>
               </div>

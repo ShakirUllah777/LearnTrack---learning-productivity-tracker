@@ -186,15 +186,22 @@
   <!-- ADD TASK BOX -->
   <form method="POST" action="{% url 'task_create' %}" class="add-box-task">
     {% csrf_token %}
-    <input type="text" name="title" id="newTitle" placeholder="Add a new task…" maxlength="140" required>
-    <select name="priority" id="newPriority">
-      <option value="HIGH">High</option>
-      <option value="MEDIUM" selected>Medium</option>
-      <option value="LOW">Low</option>
-    </select>
-    <input type="date" name="due_date" id="newDueDate" title="Due date">
+    <div style="width: 100%; display: flex; gap: 8px; flex-wrap: wrap;">
+      <input type="text" name="title" id="newTitle" placeholder="Add a new task title…" maxlength="140" required style="flex: 2; min-width: 200px;">
+      <select name="priority" id="newPriority">
+        <option value="HIGH">High Priority</option>
+        <option value="MEDIUM" selected>Medium Priority</option>
+        <option value="LOW">Low Priority</option>
+      </select>
+      <input type="date" name="due_date" id="newDueDate" title="Due date">
+    </div>
+    <div style="width: 100%; margin-top: 6px;">
+      <textarea name="description" id="newDescription" rows="2" placeholder="Task description / notes (optional)..." style="width: 100%; border: 1px solid var(--border); border-radius: 11px; padding: 10px 14px; font-size: 13px; background: #faf9ff; resize: vertical; font-family: inherit; color: var(--text);"></textarea>
+    </div>
     <input type="hidden" name="status" value="PENDING">
-    <button class="btn-primary-task" type="submit">+ Add task</button>
+    <div style="width: 100%; display: flex; justify-content: flex-end; margin-top: 4px;">
+      <button class="btn-primary-task" type="submit">+ Add Task</button>
+    </div>
   </form>
 
   <!-- SEARCH & FILTER TOOLBAR -->
@@ -221,6 +228,9 @@
         <div class="task-item-card {% if task.status == 'COMPLETED' %}done{% else %}{{ task.priority|lower }}{% endif %}" data-id="{{ task.pk }}">
           <div class="task-body-item">
             <p class="task-title-item">{{ task.title }}</p>
+            {% if task.description %}
+              <p class="task-desc-item" style="font-size: 13px; color: var(--muted); margin: 0 0 8px; line-height: 1.4; white-space: pre-line;">{{ task.description }}</p>
+            {% endif %}
             <div class="meta-item">
               <span class="pill-item {{ task.priority|lower }}">{{ task.get_priority_display }}</span>
               

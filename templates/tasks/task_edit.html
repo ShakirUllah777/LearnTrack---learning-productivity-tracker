@@ -73,6 +73,11 @@
       </div>
 
       <div class="field-edit">
+        <label for="id_description">Description</label>
+        <textarea id="id_description" name="description" rows="3" placeholder="Optional task description or details...">{{ task.description }}</textarea>
+      </div>
+
+      <div class="field-edit">
         <label for="id_priority">Priority</label>
         <select id="id_priority" name="priority">
           <option value="HIGH" {% if task.priority == 'HIGH' %}selected{% endif %}>High</option>
